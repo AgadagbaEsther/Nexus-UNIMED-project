@@ -47,7 +47,7 @@
     });
 
     const loader = new GLTFLoader();
-    loader.load('../MYSchool_project9.glb', (gltf) => {
+    loader.load('./MYSchool_project9.glb', (gltf) => {
         campus = gltf.scene;
         campus.traverse(child => {
             originalPositions.set(child.name, child.position.clone());
