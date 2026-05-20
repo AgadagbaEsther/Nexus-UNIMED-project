@@ -62,7 +62,7 @@ export const buildingMap = {
     // school laboratory doors
      "office_1": {
         body: "office1",  // This is your Empty Axis or Door name
-        displayName: "Pyhiscs Lecturer",
+        displayName: "Physics Lecturer",
         description: "Dr Ay, Dr. Ogundele, Dr. Adekanle are one of the many physics lecturer taking 100lv students, this is their office location, if you have any issues in relation to any course being taken by phyics lectureres, you can relay such issues through your class rep or go to them directly, you can also ask them for directions to the rest of the lecturers taking you, whose names i was unfortunately unable to attain."
     },
     "physics": {
