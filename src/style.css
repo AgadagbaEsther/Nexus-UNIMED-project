@@ -1,175 +1,311 @@
-  * {
+/* ==========================================================================
+   1. GLOBAL ARCHITECTURE & CORE RESETS
+   ========================================================================== */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-        :root { --neon: #00ffcc; --bg: #05080a; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
-        
-        #three-canvas { display: block; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; outline: none; }
-        
-        /* UI Wrapper */
-        .interface { position: fixed; z-index: 10; width: 100vw; height: 100vh; pointer-events: none; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
-        
-        .top-nav { display: flex; justify-content: space-between; align-items: center; pointer-events: auto; }
-        .logo { font-weight: 600; letter-spacing: 2px; color: var(--neon); text-transform: uppercase; font-size: 14px; }
-        .top-nav, .side-panel, .feedback-prompt, .search-box, input { 
+
+:root { 
+    --neon: #00ffcc; 
+    --bg: #05080a; 
+}
+
+body, html { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%; 
+    width: 100%; 
+    background: var(--bg); 
+    font-family: 'Inter', sans-serif; 
+    color: white; 
+    overflow: hidden; 
+}
+
+#three-canvas { 
+    display: block; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    z-index: 1; 
+    outline: none; 
+}
+
+/* ==========================================================================
+   2. INTERACTIVE USER INTERFACE LAYER
+   ========================================================================== */
+.interface { 
+    position: fixed; 
+    z-index: 10; 
+    width: 100vw; 
+    height: 100vh; 
+    pointer-events: none; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 30px; 
+    box-sizing: border-box; 
+}
+
+.top-nav { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    pointer-events: auto; 
+}
+
+.logo { 
+    font-weight: 600; 
+    letter-spacing: 2px; 
+    color: var(--neon); 
+    text-transform: uppercase; 
+    font-size: 14px; 
+}
+
+/* Force critical interaction nodes to stay responsive */
+.top-nav, .side-panel, .feedback-prompt, .search-box, input { 
     pointer-events: auto !important;
-        }
-        
-        /* Search styling with scrollable list */
-        .search-box { 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(15px); 
-            border: 1px solid rgba(0, 255, 204, 0.3); 
-            padding: 10px 20px; 
-            border-radius: 50px; 
-            width: 300px; 
-            pointer-events: auto; 
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding-right: 40px !important;
-        }
+}
 
+/* ==========================================================================
+   3. SEARCH COMPONENT & DROPDOWN MATRIX
+   ========================================================================== */
+.search-container {
+    position: relative;
+}
 
-        .search-container {
-        position: relative;
+.search-box { 
+    background: rgba(255, 255, 255, 0.05); 
+    backdrop-filter: blur(15px); 
+    border: 1px solid rgba(0, 255, 204, 0.3); 
+    padding: 10px 20px; 
+    border-radius: 50px; 
+    width: 300px; 
+    pointer-events: auto; 
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-right: 40px !important;
 }
-        .dropdown-arrow {
-        position: absolute;
-        right: 18px;
-        color: var(--neon);
-        font-size: 10px;
-        cursor: pointer;
-        user-select: none;
-        transition: transform 0.3s ease;
-        z-index: 5;
+
+input { 
+    background: none; 
+    border: none; 
+    color: white; 
+    width: 100%; 
+    outline: none; 
+    font-size: 14px; 
 }
-    .dropdown-arrow.open {
-        transform: rotate(180deg);
+
+.dropdown-arrow {
+    position: absolute;
+    right: 18px;
+    color: var(--neon);
+    font-size: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
+    z-index: 5;
 }
-        .custom-dropdown {
-        position: absolute;
-        top: calc(100% + 10px);
-        left: 15px;
-        width: calc(100% - 30px);
-        background: rgba(5, 8, 10, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--neon);
-        border-radius: 12px;
-        list-style: none;
-        padding: 5px 0;
-        margin: 0;
-        z-index: 9999;
-        max-height: 240px; /* Limits the dropdown box size beautifully */
-        overflow-y: auto;
-        display: none;
-        box-shadow: 0px 5px 25px rgba(0, 255, 204, 0.2);
+
+.dropdown-arrow.open {
+    transform: rotate(180deg);
 }
-        .custom-dropdown li {
-        display: block;
-        padding: 10px 15px;
-        color: #ffffff;
-        font-size: 13px;
-        cursor: pointer;
-        text-align: left;
-        border-bottom: 1px solid rgba(0, 255, 204, 0.05);
+
+.custom-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 15px;
+    width: calc(100% - 30px);
+    background: rgba(5, 8, 10, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--neon);
+    border-radius: 12px;
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+    z-index: 9999;
+    max-height: 240px; 
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0px 5px 25px rgba(0, 255, 204, 0.2);
 }
-        .custom-dropdown li:last-child { border-bottom: none; }
-        .custom-dropdown li:hover { background: rgba(0, 255, 204, 0.15); color: var(--neon); }
+
+.custom-dropdown li {
+    display: block;
+    padding: 10px 15px;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 255, 204, 0.05);
+}
+
+.custom-dropdown li:last-child { 
+    border-bottom: none; 
+}
+
+.custom-dropdown li:hover { 
+    background: rgba(0, 255, 204, 0.15); 
+    color: var(--neon); 
+}
 
 /* Smooth Custom Scrollbar */
-        .custom-dropdown::-webkit-scrollbar { width: 6px; }
-        .custom-dropdown::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 0 12px 12px 0; }
-        .custom-dropdown::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
+.custom-dropdown::-webkit-scrollbar { 
+    width: 6px; 
+}
 
+.custom-dropdown::-webkit-scrollbar-track { 
+    background: rgba(0, 0, 0, 0.3); 
+    border-radius: 0 12px 12px 0; 
+}
 
-        input { background: none; border: none; color: white; width: 100%; outline: none; font-size: 14px; }
+.custom-dropdown::-webkit-scrollbar-thumb { 
+    background: var(--neon); 
+    border-radius: 10px; 
+}
 
-        /* Side Panel */
-        .side-panel {
-            position: absolute; right: 30px; top: 100px; width: 300px;
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            border-left: 2px solid var(--neon); padding: 25px; border-radius: 15px;
-            pointer-events: auto; transform: translateX(450px); 
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .side-panel.active { transform: translateX(0); }
+/* ==========================================================================
+   4. CONTEXTUAL OVERLAYS (PANELS, TOASTS & SCANNERS)
+   ========================================================================== */
+.side-panel {
+    position: absolute; 
+    right: 30px; 
+    top: 100px; 
+    width: 300px;
+    background: rgba(255, 255, 255, 0.03); 
+    backdrop-filter: blur(20px);
+    border-left: 2px solid var(--neon); 
+    padding: 25px; 
+    border-radius: 15px;
+    pointer-events: auto; 
+    transform: translateX(450px); 
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-        /* Toast & Notices */
-        #marker-toast {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: var(--neon); color: black; padding: 12px 25px;
-            border-radius: 50px; font-weight: bold; font-size: 12px;
-            display: none; z-index: 100;
-            text-align: center;
-            width: 500px;
-            max-width: 80%;
-        }
+.side-panel.active { 
+    transform: translateX(0); 
+}
 
-        /* .campus-notice {
-            position: absolute; bottom: 60px; left: 30px;
-            font-size: 11px; opacity: 0.6; line-height: 1.4;
-            max-width: 400px; border-left: 1px solid var(--neon); padding-left: 10px;
-        } */
+#marker-toast {
+    position: fixed; 
+    bottom: 100px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    background: var(--neon); 
+    color: black; 
+    padding: 12px 25px;
+    border-radius: 50px; 
+    font-weight: bold; 
+    font-size: 12px;
+    display: none; 
+    z-index: 100;
+    text-align: center;
+    width: 440px;
+    max-width: 85%;
+}
 
-        .status-tag { position: absolute; bottom: 30px; left: 30px; font-family: monospace; font-size: 10px; color: var(--neon); letter-spacing: 1px; }
-        
-        /* Form Prompt */
-        .feedback-prompt {
-            position: absolute; bottom: 80px; right: 30px;
-            background: rgba(0, 255, 204, 0.1); border: 1px solid var(--neon);
-            padding: 15px; border-radius: 10px; pointer-events: auto;
-            display: none; width: 220px;
-        }
+.status-tag { 
+    position: absolute; 
+    bottom: 30px; 
+    left: 30px; 
+    font-family: monospace; 
+    font-size: 10px; 
+    color: var(--neon); 
+    letter-spacing: 1px; 
+}
 
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 768px) {
-            .interface { padding: 15px; }
-            
-            .search-box { 
-                width: 60%; /* Shrinks search box on phones */
-                padding: 8px 15px; 
-            }
+.feedback-prompt {
+    position: absolute; 
+    bottom: 80px; 
+    right: 30px;
+    background: rgba(0, 255, 204, 0.1); 
+    border: 1px solid var(--neon);
+    padding: 15px; 
+    border-radius: 10px; 
+    pointer-events: auto;
+    display: none; 
+    width: 220px;
+}
 
+/* ==========================================================================
+   5. OPTIMIZED ENGINE LOADING GRAPHICS
+   ========================================================================== */
+#loading-screen {
+    position: fixed;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    background: #05080a;
+    color: #00ffcc;
+    display: flex; 
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    z-index: 10000; 
+    font-family: sans-serif;
+}
+
+.spinner {
+    width: 40px; 
+    height: 40px;
+    border: 4px solid rgba(0, 255, 204, 0.1);
+    border-top: 4px solid #00ffcc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   6. MOBILE VIEW MEDIA ADAPTIVITY LAYER
+   ========================================================================== */
+@media (max-width: 768px) {
+    .interface { 
+        padding: 15px; 
+    }
+    
+    .logo { 
+        font-size: 11px; 
+        letter-spacing: 1px; 
+    }
+
+    .search-box { 
+        width: 65%; 
+        padding: 8px 15px; 
+    }
 
     .side-panel {
-        width: 90%;          /* Make it fit nicely on the screen width */
-        left: 5%;            /* Center it perfectly left-to-right */
-        top: 75px;           /* Push it down just enough to sit below the search bar */
-        padding: 12px;       /* Shrink internal padding so the text isn't bloated */
-        
-        /* 💡 THE FIX: Shrink the card and let long text scroll inside it */
+        width: 90%;          
+        left: 5%;            
+        top: 85px;           
+        padding: 15px;       
         max-height: 220px;   
         overflow-y: auto;    
     }
 
-    /* Shrink the building name text inside the card */
     .side-panel h2, #view-name {
         font-size: 16px !important;
         margin-bottom: 5px !important;
     }
 
-    /* Shrink the description text body so it takes up less space */
     #view-desc {
         font-size: 11px !important;
         line-height: 1.4 !important;
     }
 
-
-            .logo { font-size: 11px; letter-spacing: 1px; }
-/* 
-            .campus-notice {
-                bottom: 100px; /* Moves notice up so it doesn't hit the status tag */
-                /* font-size: 9px;
-                max-width: 80%;
-            } */ 
-
-            #marker-toast {
-                width: 350%;
-                font-size: 10px;
-                bottom: 160px;
-                max-width: 95%;
-            }
-        }
+    #marker-toast {
+        width: 320px;       /* Custom clean width for small viewport wrappers */
+        max-width: 90%;
+        font-size: 11px;
+        bottom: 170px;       /* Safely offsets so it clears lower navigation bars */
+        border-radius: 16px; /* Pill layout balances cleanly on multiple lines */
+    }
+}

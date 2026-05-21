@@ -12,7 +12,7 @@ const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerH
 const birdsEye = { x: 500, y: 750, z: 500 };
 camera.position.set(birdsEye.x, birdsEye.y, birdsEye.z);
 
-const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#three-canvas'), antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#three-canvas'), antialias: true, powerPreference: "high-performance"});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.localClippingEnabled = true;
@@ -81,10 +81,24 @@ function closeDropdown() {
 const loader = new GLTFLoader();
 loader.load('./MYSchool_project9.glb', (gltf) => {
     campus = gltf.scene;
+    scene.add(campus);
+    // 🛠️ HIDE THE LOADING SCREEN INSTANTLY WHEN THE MODEL ARRIVES:
+    const loaderElement = document.getElementById('loading-screen');
+    if (loaderElement) {
+        loaderElement.style.display = 'none';
+    }
+}, 
+// Optional: track progress
+function(xhr) {
+    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+},
+// Catch loading errors
+function(error) {
+    console.error('An error happened layout loading:', error);
+
     campus.traverse(child => {
         originalPositions.set(child.name, child.position.clone());
     });
-    scene.add(campus);
     const loadStatus = document.getElementById('load-status');
     if (loadStatus) loadStatus.innerText = "SYSTEM ONLINE";
 });
