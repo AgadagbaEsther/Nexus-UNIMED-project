@@ -370,3 +370,20 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// ==========================================================================
+// 🛠️ PROFESSIONAL DYNAMIC MOBILE VIEWPORT HEIGHT LOCK
+// ==========================================================================
+function lockMobileViewport() {
+    // Calculates 1% of the actual window layout viewport height
+    let vh = window.innerHeight * 0.01;
+    // Sets it securely as a root CSS custom variable (--vh)
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Attach listeners to recalculate on screen rotate or desktop adjustments
+window.addEventListener('resize', lockMobileViewport);
+window.addEventListener('orientationchange', lockMobileViewport);
+
+// Initialize the locking system instantly on deployment launch
+lockMobileViewport();
