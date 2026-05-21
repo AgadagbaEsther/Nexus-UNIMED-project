@@ -328,4 +328,9 @@ input {
         bottom: 170px;       
         border-radius: 16px; 
     }
+
+    #load-status {
+        display: none !important;
+}
+
 }
