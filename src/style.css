@@ -105,17 +105,17 @@
             display: none; z-index: 100;
         }
 
-        .campus-notice {
+        /* .campus-notice {
             position: absolute; bottom: 60px; left: 30px;
             font-size: 11px; opacity: 0.6; line-height: 1.4;
             max-width: 400px; border-left: 1px solid var(--neon); padding-left: 10px;
-        }
+        } */
 
         .status-tag { position: absolute; bottom: 30px; left: 30px; font-family: monospace; font-size: 10px; color: var(--neon); letter-spacing: 1px; }
         
         /* Form Prompt */
         .feedback-prompt {
-            position: absolute; bottom: 30px; right: 30px;
+            position: absolute; bottom: 80px; right: 30px;
             background: rgba(0, 255, 204, 0.1); border: 1px solid var(--neon);
             padding: 15px; border-radius: 10px; pointer-events: auto;
             display: none; width: 220px;
@@ -156,12 +156,12 @@
 }
 
             .logo { font-size: 11px; letter-spacing: 1px; }
-
+/* 
             .campus-notice {
                 bottom: 100px; /* Moves notice up so it doesn't hit the status tag */
-                font-size: 9px;
+                /* font-size: 9px;
                 max-width: 80%;
-            }
+            } */ 
 
             #marker-toast {
                 width: 80%;
