@@ -61,28 +61,33 @@ if (dList) {
 }
 
 function openDropdownFull() {
-    // 💡 Add this safety guard line
     if (!dList) return; 
-    
     Array.from(dList.children).forEach(li => li.style.display = 'block');
     dList.style.display = 'block';
     if (arrowBtn) arrowBtn.classList.add('open');
 }
 
 function closeDropdown() {
-    // 💡 Add this safety guard line
     if (!dList) return; 
-    
     dList.style.display = 'none';
     if (arrowBtn) arrowBtn.classList.remove('open');
 }
-// --- ASSET LOADER LAYER (FIXED & TUNED) ---
+
+// --- ASSET LOADER LAYER (WITH POSITION & ROTATION SHIFTS) ---
 const loader = new GLTFLoader();
 loader.load('./MYSchool_project9.glb', (gltf) => {
     campus = gltf.scene;
+    
+    // 🛠️ SHIFT MODEL LEFT & FORWARD: Gives room for side content interfaces
+    campus.position.x = -60; 
+    campus.position.z = -20; 
+    
+    // 🛠️ ISOMETRIC SPAWN ROTATION: Sets a professional architectural starting angle
+    campus.rotation.y = Math.PI / 4; 
+
     scene.add(campus);
     
-    // ✅ FIXED: Safely record original node coordinates the second the model arrives successfully!
+    // ✅ Safely record original node coordinates relative to offsets on arrival success
     campus.traverse(child => {
         if (child.name) {
             originalPositions.set(child.name, child.position.clone());
@@ -98,33 +103,31 @@ loader.load('./MYSchool_project9.glb', (gltf) => {
     const loadStatus = document.getElementById('load-status');
     if (loadStatus) loadStatus.innerText = "SYSTEM ONLINE";
 }, 
-// Track progress
 function(xhr) {
     if (xhr.total > 0) {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
     }
 },
-// Catch loading errors
 function(error) {
     console.error('An error happened layout loading:', error);
-
-    campus.traverse(child => {
-        originalPositions.set(child.name, child.position.clone());
-    });
-    const loadStatus = document.getElementById('load-status');
-    if (loadStatus) loadStatus.innerText = "SYSTEM ONLINE";
 });
 
+// --- TIMED SEQUENTIAL UX SELECTION ENGINE ---
 function processSelection(data, point) {
     const panel = document.getElementById('side-panel');
+    const toggleBtn = document.getElementById('panel-toggle');
+    const tooltip = document.getElementById('guide-tooltip');
     const toast = document.getElementById('marker-toast');
-    if (panel) panel.classList.remove('active');
 
-    // 1. Reset everything (Slicers/Lifters) before moving
+    // Smoothly pull back previous states out-of-the-way during active camera runs
+    if (panel) panel.classList.remove('active');
+    if (toggleBtn) toggleBtn.classList.remove('open');
+    if (tooltip) tooltip.classList.remove('show');
+
     resetSurgically(() => {
         const tl = gsap.timeline();
 
-        // 2. FIRST MOVE: Go to birdsEye view
+        // CAMERA FLIGHT: Phase 1 (Reset view upward)
         tl.to(camera.position, { 
             x: birdsEye.x, 
             y: birdsEye.y, 
@@ -133,7 +136,7 @@ function processSelection(data, point) {
             ease: "power2.inOut" 
         });
 
-        // 3. SECOND MOVE: Fly to the building and move the focal point (controls.target)
+        // CAMERA FLIGHT: Phase 2 (Swoop down into target coordinates)
         tl.to(camera.position, {
             x: point.x + 45, 
             y: point.y + 40, 
@@ -141,30 +144,49 @@ function processSelection(data, point) {
             duration: 2.5, 
             ease: "power2.inOut",
             onStart: () => {
-                // UI DETAILS UPDATE
                 const viewName = document.getElementById('view-name');
                 const viewDesc = document.getElementById('view-desc');
                 if (viewName) viewName.innerText = data.displayName;
                 if (viewDesc) viewDesc.innerText = data.description;
-                if (panel) panel.classList.add('active');
                 
-                // Hide introductory notice box to clear workspace for the feedback form layout
                 const campusNotice = document.querySelector('.campus-notice');
                 if (campusNotice) campusNotice.style.display = 'none';
                 
-                // TARGET MARKER CONFIGURATION
                 marker.position.set(point.x, point.y + 0.5, point.z); 
                 marker.visible = true;
                 
-                // FLOATING TOAST LOGIC
-                if (toast) {
+              // 🔔 UPDATED TOAST LOGIC: Only show if searchCount is less than 3
+                // (Since searchCount increments on landing, it will show on clicks 1, 2, and 3, then stop!)
+                if (searchCount < 3 && toast) {
                     toast.style.display = 'block';
-                    setTimeout(() => toast.style.display = 'none', 5000);
+                    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+                } else if (toast) {
+                    // Safety guard: ensure it stays hidden on later clicks
+                    toast.style.display = 'none';
+                }
+            },
+            onComplete: () => {
+                searchCount++; // Log active tracking instances
+
+                // 🎯 STEP 2: SEQUENCED DRAWER TOOLTIP PROMPT
+                // Fires only on first two lookup sequences, dropping 3.2 seconds after flight completion
+                if (searchCount <= 2 && tooltip) {
+                    setTimeout(() => {
+                        // Structural check ensures user hasn't clicked menu open in the meantime
+                        if (toggleBtn && !toggleBtn.classList.contains('open')) {
+                            tooltip.classList.add('show');
+                            // Let the pointing arrow box rest for 5.5 seconds, then dismiss
+                            setTimeout(() => tooltip.classList.remove('show'), 5500);
+                        }
+                    }, 2200); 
+                }
+                const feedbackPrompt = document.getElementById('feedback-prompt');
+                if (searchCount && feedbackPrompt) {
+                     feedbackPrompt.style.display = 'block';
                 }
             }
         });
 
-        // This ensures OrbitControls "look at" the specific building model origin perfectly
         tl.to(controls.target, {
             x: point.x, 
             y: point.y, 
@@ -173,15 +195,8 @@ function processSelection(data, point) {
             onUpdate: () => controls.update() 
         }, "-=2.5"); 
 
-        // 4. EXECUTE RIGGED BUILDING LIFTS/SLICES
         tl.add(() => executeBuildingAnimations(data, point), "-=1.5");
 
-        // 5. ENGAGE FEEDBACK FRAMEWORK
-        searchCount++;
-        const feedbackPrompt = document.getElementById('feedback-prompt');
-        if (searchCount && feedbackPrompt) {
-            feedbackPrompt.style.display = 'block';
-        }
     });
 }
 
@@ -192,7 +207,7 @@ function executeBuildingAnimations(data, point) {
             if (obj) {
                 currentlyLifted.push(obj);
                 const home = originalPositions.get(obj.name);
-                gsap.to(obj.position, { y: home.y + 30, duration: 2 });
+                if (home) gsap.to(obj.position, { y: home.y + 30, duration: 2 });
             }
         });
     }
@@ -231,9 +246,13 @@ function resetSurgically(onDone) {
     let count = 0;
     currentlyLifted.forEach(obj => {
         const home = originalPositions.get(obj.name);
-        gsap.to(obj.position, { x: home.x, y: home.y, z: home.z, duration: 0.8, onComplete: () => {
+        if (home) {
+            gsap.to(obj.position, { x: home.x, y: home.y, z: home.z, duration: 0.8, onComplete: () => {
+                count++; if (count === currentlyLifted.length) { currentlyLifted = []; onDone(); }
+            }});
+        } else {
             count++; if (count === currentlyLifted.length) { currentlyLifted = []; onDone(); }
-        }});
+        }
     });
 }
 
@@ -255,12 +274,30 @@ function performSearch(query) {
 
 // --- INTERACTIVE EVENT CONTROL LAYERS ---
 
-// Toggle full dropdown via down arrow icon click
+// Interactive Menu Toggle Button Listener (Hamburger Engine)
+const toggleBtnNode = document.getElementById('panel-toggle');
+const sidePanelNode = document.getElementById('side-panel');
+const tooltipNode = document.getElementById('guide-tooltip');
+
+if (toggleBtnNode && sidePanelNode) {
+    toggleBtnNode.addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        if (tooltipNode) tooltipNode.classList.remove('show'); // Dismiss hint on click
+
+        const isOpen = toggleBtnNode.classList.toggle('open');
+        if (isOpen) {
+            sidePanelNode.classList.add('active');
+        } else {
+            sidePanelNode.classList.remove('active');
+        }
+    });
+}
+
 if (arrowBtn) {
     arrowBtn.addEventListener('click', (e) => {
         e.stopPropagation(); 
-        const sidePanel = document.getElementById('side-panel');
-        if (sidePanel) sidePanel.classList.remove('active');
+        if (sidePanelNode) sidePanelNode.classList.remove('active');
+        if (toggleBtnNode) toggleBtnNode.classList.remove('open');
         
         if (dList && dList.style.display === 'block') {
             closeDropdown();
@@ -271,39 +308,30 @@ if (arrowBtn) {
 }
 
 if (searchInput) {
-    // Open full options selection if clicking directly into an empty entry text block
     searchInput.addEventListener('click', (e) => {
         e.stopPropagation(); 
-        const sidePanel = document.getElementById('side-panel');
-        if (sidePanel) sidePanel.classList.remove('active');
-        
-        if (searchInput.value.trim() === '') {
-            openDropdownFull();
-        }
+        if (sidePanelNode) sidePanelNode.classList.remove('active');
+        if (toggleBtnNode) toggleBtnNode.classList.remove('open');
+        if (searchInput.value.trim() === '') openDropdownFull();
     });
 
-    // Execute lookup sequence when hitting manual keyboard Enter key
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            const sidePanel = document.getElementById('side-panel');
-            if (sidePanel) sidePanel.classList.remove('active');
+            if (sidePanelNode) sidePanelNode.classList.remove('active');
+            if (toggleBtnNode) toggleBtnNode.classList.remove('open');
             performSearch(e.target.value);
             closeDropdown();
         }
     });
 
-    // Handle dynamic string matching suggestions on active input typing
     searchInput.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase().trim();
         let hasResults = false;
 
-        const sidePanel = document.getElementById('side-panel');
-        if (sidePanel) sidePanel.classList.remove('active');
+        if (sidePanelNode) sidePanelNode.classList.remove('active');
+        if (toggleBtnNode) toggleBtnNode.classList.remove('open');
 
-        if (val === "") {
-            openDropdownFull();
-            return;
-        }
+        if (val === "") { openDropdownFull(); return; }
 
         if (dList) {
             Array.from(dList.children).forEach(li => {
@@ -314,7 +342,6 @@ if (searchInput) {
                     li.style.display = 'none';
                 }
             });
-
             if (hasResults) {
                 dList.style.display = 'block';
                 if (arrowBtn) arrowBtn.classList.add('open');
@@ -326,20 +353,13 @@ if (searchInput) {
     });
 }
 
-// Dynamic blur handler out-of-bounds click listener dismisses dropdown menu automatically
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-box')) {
-        closeDropdown();
-    }
+    if (!e.target.closest('.search-box')) closeDropdown();
 });
 
 let mouseDownPos = new THREE.Vector2();
+window.addEventListener('mousedown', (e) => { mouseDownPos.set(e.clientX, e.clientY); });
 
-window.addEventListener('mousedown', (e) => {
-    mouseDownPos.set(e.clientX, e.clientY);
-});
-
-// Raycasting interaction vector mapping
 window.addEventListener('mouseup', (e) => {
     const mouseUpPos = new THREE.Vector2(e.clientX, e.clientY);
     const distance = mouseDownPos.distanceTo(mouseUpPos);
@@ -365,7 +385,6 @@ window.addEventListener('mouseup', (e) => {
     }
 });
 
-// --- CORE FRAME RENDER LOOP ---
 function animate() {
     requestAnimationFrame(animate);
     if (marker.visible) {
@@ -383,19 +402,10 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ==========================================================================
-// 🛠️ PROFESSIONAL DYNAMIC MOBILE VIEWPORT HEIGHT LOCK
-// ==========================================================================
 function lockMobileViewport() {
-    // Calculates 1% of the actual window layout viewport height
     let vh = window.innerHeight * 0.01;
-    // Sets it securely as a root CSS custom variable (--vh)
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
-
-// Attach listeners to recalculate on screen rotate or desktop adjustments
 window.addEventListener('resize', lockMobileViewport);
 window.addEventListener('orientationchange', lockMobileViewport);
-
-// Initialize the locking system instantly on deployment launch
 lockMobileViewport();

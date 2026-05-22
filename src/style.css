@@ -81,7 +81,7 @@ body, html {
 }
 
 /* Force critical interaction nodes to stay responsive */
-.top-nav, .side-panel, .feedback-prompt, .search-box, input { 
+.top-nav, .side-panel, .feedback-prompt, .search-box, input, .panel-toggle { 
     pointer-events: auto !important;
 }
 
@@ -189,7 +189,7 @@ input {
 .side-panel {
     position: absolute; 
     right: 30px; 
-    top: 100px; 
+    top: 160px; /* 🛠️ ADJUSTED: Pushed down slightly to give room to the hamburger icon */
     width: 300px;
     background: rgba(255, 255, 255, 0.03); 
     backdrop-filter: blur(20px);
@@ -281,11 +281,94 @@ input {
 }
 
 /* ==========================================================================
-   6. MOBILE VIEW MEDIA ADAPTIVITY LAYER
+   6. PROGRESSIVE DISCLOSURE SYSTEM ENGINE
+   ========================================================================== */
+.panel-toggle {
+    position: absolute;
+    right: 30px;
+    top: 100px;
+    width: 45px;
+    height: 45px;
+    background: rgba(5, 8, 10, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--neon);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-toggle:hover {
+    background: rgba(0, 255, 204, 0.15);
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+}
+
+.panel-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: var(--neon);
+    transition: all 0.3s ease;
+}
+
+/* Transform icon to 'X' close graphic when open */
+.panel-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.panel-toggle.open span:nth-child(2) { opacity: 0; }
+.panel-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Floating Instruction Tooltip Box */
+.guide-tooltip {
+    position: absolute;
+    right: 90px; 
+    top: 103px;
+    background: var(--neon);
+    color: #05080a;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: monospace;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
+    line-height: 1.4;
+    pointer-events: none;
+    z-index: 99;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3);
+}
+
+.guide-tooltip.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Tiny UI Pointer Arrow directing eyes to the toggle button */
+.tooltip-arrow {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 6px solid var(--neon);
+}
+
+/* ==========================================================================
+   7. MOBILE VIEW MEDIA ADAPTIVITY LAYER (OPTIMIZED FOR ANDROID)
    ========================================================================== */
 @media (max-width: 768px) {
     input, #nexus-search {
-        font-size: 16px !important; /* Blocks native iOS Safari viewport auto-zooming mechanics */
+        font-size: 16px !important; /* Blocks native mobile viewport auto-zooming mechanics */
     }
     
     .interface { 
@@ -302,10 +385,28 @@ input {
         padding: 8px 15px; 
     }
 
+    /* Hamburger Node Adjustments for Mobile Real-Estate */
+    .panel-toggle {
+        right: 15px;
+        top: 85px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .guide-tooltip {
+        right: 65px;
+        top: 88px;
+        font-size: 10px;
+        padding: 8px 12px;
+        max-width: 180px;
+    }
+
+    /* Mobile Drawer Layer Layout Rules */
     .side-panel {
         width: 90%;          
         left: 5%;            
-        top: 85px;           
+        right: auto;
+        top: 140px !important;            
         padding: 15px;       
         max-height: 220px;   
         overflow-y: auto;    
@@ -329,8 +430,8 @@ input {
         border-radius: 16px; 
     }
 
+    /* ✅ CRITICAL ANDROID FIX: Safe-erasure of overlaying structural elements */
     #load-status {
         display: none !important;
-}
-
+    }
 }
